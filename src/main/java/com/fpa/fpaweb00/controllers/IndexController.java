@@ -13,7 +13,9 @@ public class IndexController {
     @GetMapping({"/", "/index"})
     public String index(Model model) {
         // Mensaje básico
-        model.addAttribute("mensaje", "Hola mundo");
+        model.addAttribute("mensaje1", "Hola mundo");
+
+        model.addAttribute("mensaje2", "Prueba de generación de una web con Render.com");
 
         // Fecha y hora actuales formateadas
         String fechaHora = LocalDateTime.now()
