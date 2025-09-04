@@ -22,6 +22,9 @@ public class IndexController {
                 .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
         model.addAttribute("fechaHora", fechaHora);
 
+        model.addAttribute("mensaje3", "Último commit que subiré a GitHub y Render.com");
+
+
         // Renderiza la plantilla index.html
         return "index";
     }
