@@ -1,45 +1,34 @@
-# Dockerfile optimizado para OpenJDK 21 y Gradle
+# Dockerfile optimizado para Render
 FROM eclipse-temurin:21-jdk-alpine as build
 
 WORKDIR /workspace/app
 
-# Copiar archivos de build para cachear dependencias
+# Copiar archivos de build primero (para cache)
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
 COPY settings.gradle .
 
-# Dar permisos y descargar dependencias
+# Descargar dependencias
 RUN chmod +x gradlew && \
     ./gradlew dependencies --no-daemon
 
-# Copiar código fuente
+# Copiar código y construir
 COPY src src
+RUN ./gradlew build -x test --no-daemon
 
-# Build de la aplicación
-RUN ./gradlew build -x test --no-daemon && \
-    mkdir -p build/dependency && \
-    cd build/dependency && \
-    jar -xf ../libs/*.jar
-
-# Fase final de producción
+# Fase de producción
 FROM eclipse-temurin:21-jre-alpine
 
-VOLUME /tmp
+WORKDIR /app
 
-# Usar usuario no-root
+# Copiar solo el JAR
+COPY --from=build /workspace/app/build/libs/*.jar app.jar
+
+# Usuario no-root
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring
 
-ARG DEPENDENCY=/workspace/app/build/dependency
+EXPOSE 8080
 
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-
-# Ejecutar la aplicación optimizada para containers
-ENTRYPOINT ["java", \
-    "-cp", "app:app/lib/*", \
-    "-XX:+UseContainerSupport", \
-    "-XX:MaxRAMPercentage=75.0", \
-    "com.fpa.fpaweb00.Fpaweb00Application"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
