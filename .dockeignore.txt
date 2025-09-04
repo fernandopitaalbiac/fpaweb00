@@ -1,0 +1,14 @@
+.dockerignore
+.git
+.gitignore
+build/
+.gradle
+*.log
+.idea
+*.iml
+.DS_Store
+gradle-app.setting
+out/
+bin/
+*.tar
+*.zip
